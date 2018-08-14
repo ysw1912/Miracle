@@ -9,6 +9,9 @@
 #include "socket.h"
 
 #include <assert.h>
+#include <stdio.h>  // perror
+#include <stdlib.h> // abort
+#include <unistd.h> // close
 
 using namespace Miracle;
 
