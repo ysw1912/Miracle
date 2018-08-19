@@ -37,10 +37,78 @@ void run_server()
 {
     Miracle::socket sock(Miracle::socket::create_udp());
     sock.bind(Miracle::inet_address(g_port));
+
+    while (true) {
+        Message message = {0, 0};
+
+        struct sockaddr peer_addr;
+        bzero(&peer_addr, sizeof(peer_addr));
+        socklen_t addrlen = sizeof(peer_addr);
+        ssize_t nr = ::recvfrom(sock.fd(), &message, sizeof(message), 0, &peer_addr, &addrlen);
+        if (nr == sizeof(message))
+        {
+            message.response = now();
+            ssize_t nw = ::sendto(sock.fd(), &message, sizeof(message), 0, &peer_addr, addrlen);
+            if (nw < 0) {
+                perror("send Message");
+            }
+            else if (nw != sizeof(message)) {
+                printf("send Message of %zd bytes, expect %zd bytes\n", nw, sizeof(message));
+            }
+        }
+        else if (nr < 0) {
+            perror("recv Message");
+        }
+        else {
+            printf("recv Message of %zd bytes, expect %zd bytes\n", nr, sizeof(message));
+        }
+    }
 }
 
-void run_client()
+void run_client(const char* hostname)
 {
+    Miracle::socket sock(Miracle::socket::create_udp());
+    Miracle::inet_address server_addr(g_port);
+    if (!Miracle::inet_address::resolve(hostname, &server_addr)) {
+        printf("Unable to resolve %s\n", hostname);
+        return;
+    }
+    if (sock.connect(server_addr) != 0) {
+        perror("connect to server");
+        return;
+    }
+
+    std::thread thr([&sock]() {
+        while (true) {
+            Message message = {0, 0};
+            message.request = now();
+            int nw = sock.send(&message, sizeof(message));
+            if (nw < 0) {
+                perror("send Message");
+            }
+            else if (nw != sizeof(message)) {
+                printf("send Message of %d bytes, expect %zd bytes\n", nw, sizeof(message));
+            }
+            ::usleep(200 * 1000);
+        }
+    });
+
+    while (true) {
+        Message message = {0, 0};
+        int nr = sock.recv(&message, sizeof(message));
+        if (nr == sizeof(message)) {
+            int64_t back = now();
+            int64_t mine = (back + message.request) / 2;
+            printf("now %jd, round trip %jd, clock error %jd\n",
+                   back, back - message.request, message.response - mine);
+        }
+        else if (nr < 0) {
+            perror("receive Message");
+        }
+        else {
+            printf("receive Message of %d bytes, expect %zd bytes\n", nr, sizeof(message));
+        }
+    }
 }
 
 int main(int argc, char *argv[])
@@ -53,7 +121,7 @@ int main(int argc, char *argv[])
         run_server();
     }
     else {
-        run_client();
+        run_client(argv[1]);
     }
     return 0;
 }

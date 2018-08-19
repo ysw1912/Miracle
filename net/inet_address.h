@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "../base/common.h"
 
 #include <string>
 #include <vector>
@@ -26,6 +26,18 @@ namespace Miracle
         set_sockaddr_in(const struct sockaddr_in& addr)
         { m_addr = addr; }
 
+        // resolve hostname to IP address 
+        static bool resolve(String hostname, inet_address* out);
+        
+        bool operator==(const inet_address& rhs) const 
+        {
+            return m_addr.sin_family == rhs.m_addr.sin_family 
+                && m_addr.sin_addr.s_addr == rhs.m_addr.sin_addr.s_addr 
+                && m_addr.sin_port == m_addr.sin_port;
+        }
+
+    private:
+        static bool resolve_slow(const char* hostname, inet_address* out);
     private:
         struct sockaddr_in m_addr;
     };

@@ -1,21 +1,33 @@
-CXXFLAGS = -g -Wall
+CPPFLAGS = -g -Wall
+LDFLAGS =
 
-INC_DIR = net 
-HEADERS = $(wildcard $(INC_DIR)/*.h)
+BASE_DIR = base 
+NET_DIR = net 
 
-SOURCE = $(wildcard $(INC_DIR)/*.cpp)
+HEADERS = $(wildcard $(BASE_DIR)/*.h)
+HEADERS += $(wildcard $(NET_DIR)/*.h)
+
+SOURCE = $(wildcard $(BASE_DIR)/*.cpp)
+SOURCE += $(wildcard $(NET_DIR)/*.cpp)
+
 OBJS = $(SOURCE: .cpp=.o)
-TESTS = roundtrip 
+TESTS = roundtrip	\
+	    netcat	
 
 all: $(TESTS)
 
 $(TESTS): $(HEADERS)
 
 $(TESTS):
-	g++ $(CXXFLAGS) -o $@ $(filter %.cpp,$^) $(LDFLAGS)
+	g++ $(CPPFLAGS) -o $@ $(filter %.cpp,$^) $(LDFLAGS)
 
 roundtrip: tests/roundtrip.cpp net/inet_address.cpp net/socket.cpp
-roundtrip: CXXFLAGS += --std=c++11
+roundtrip: CPPFLAGS += -std=c++11
+roundtrip: LDFLAGS += -lpthread
+
+netcat: tests/netcat.cpp net/acceptor.cpp net/inet_address.cpp net/socket.cpp net/tcp_stream.cpp
+netcat: CPPFLAGS += -std=c++11
+netcat: LDFLAGS += -lpthread
 
 clean:
 	rm -f $(TESTS)
