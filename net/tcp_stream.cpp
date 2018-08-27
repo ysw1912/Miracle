@@ -50,7 +50,7 @@ namespace Miracle
         return connect_aux(server_addr, &local_addr);
     }
 
-    int tcp_stream::recv_all(void* buf, int len)
+    int tcp_stream::recvall(void* buf, int len)
     {
         return ::recv(m_sock.fd(), buf, len, MSG_WAITALL);
     }
@@ -60,7 +60,7 @@ namespace Miracle
         return m_sock.recv(buf, len);
     }
 
-    int tcp_stream::send_all(const void* buf, int len)
+    int tcp_stream::sendall(const void* buf, int len)
     {
         int nwrite = 0;
         while (nwrite < len) {

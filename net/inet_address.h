@@ -33,7 +33,7 @@ namespace Miracle
         {
             return m_addr.sin_family == rhs.m_addr.sin_family 
                 && m_addr.sin_addr.s_addr == rhs.m_addr.sin_addr.s_addr 
-                && m_addr.sin_port == m_addr.sin_port;
+                && m_addr.sin_port == rhs.m_addr.sin_port;
         }
 
     private:

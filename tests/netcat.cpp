@@ -7,7 +7,6 @@
 
 #include "../net/acceptor.h"
 #include "../net/inet_address.h"
-#include "../net/socket.h"
 #include "../net/tcp_stream.h"
 
 #include <thread>
@@ -54,7 +53,7 @@ void run(Miracle::tcp_stream_ptr stream)
     char buf[8192];
     int nr = 0;
     while ((nr = ::read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
-        int nw = stream->send_all(buf, nr);
+        int nw = stream->sendall(buf, nr);
         if (nw < nr) {
             break;
         }

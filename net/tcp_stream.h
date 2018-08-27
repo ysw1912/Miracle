@@ -25,10 +25,10 @@ namespace Miracle
         static tcp_stream_ptr connect(const inet_address& server_addr);
         static tcp_stream_ptr connect(const inet_address& server_addr, const inet_address& local_addr); 
 
-        int recv_all(void* buf, int len);
+        int recvall(void* buf, int len);
         int recv(void* buf, int len);
 
-        int send_all(const void* buf, int len);
+        int sendall(const void* buf, int len);
         int send(const void* buf, int len);
 
         void shutdown_write();
