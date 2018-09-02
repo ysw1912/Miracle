@@ -5,6 +5,7 @@
 
 #include <boost/noncopyable.hpp>
 
+#include <assert.h>
 #include <pthread.h>
 
 namespace Miracle 
@@ -26,7 +27,7 @@ namespace Miracle
 
         bool is_locked_by_this_thread() const 
         {
-            return m_current_tid == current_thread::tid();
+            return m_current_tid == this_thread::id();
         }
 
         void assert_locked() const 
@@ -82,7 +83,7 @@ namespace Miracle
         
         void assign_tid()
         {
-            m_current_tid = current_thread::tid();
+            m_current_tid = this_thread::id();
         }
 
         void unassign_tid()
@@ -99,10 +100,14 @@ namespace Miracle
     {
     public:
         explicit lock_guard(lock& lock) : m_lock(lock)
-        { m_lock.acquire(); }
+        {
+            m_lock.acquire();
+        }
 
         ~lock_guard()
-        { m_lock.release(); }
+        {
+            m_lock.release();
+        }
 
     private:
         lock& m_lock;

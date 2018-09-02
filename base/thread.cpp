@@ -11,6 +11,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_same.hpp>
 
+#include <assert.h>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 
@@ -25,9 +26,9 @@ namespace Miracle
 
         void after_fork()
         {
-            current_thread::t_cached_tid = 0;
-            current_thread::t_thread_name = "main";
-            current_thread::tid(); 
+            this_thread::t_tid = 0;
+            this_thread::t_thread_name = "main";
+            this_thread::id(); 
         }
 
         class thread_name_init
@@ -35,8 +36,8 @@ namespace Miracle
         public:
             thread_name_init()
             {
-                current_thread::t_thread_name = "main";
-                current_thread::tid();
+                this_thread::t_thread_name = "main";
+                this_thread::id();
                 pthread_atfork(NULL, NULL, &after_fork);
             }
         };
@@ -46,6 +47,7 @@ namespace Miracle
         struct thread_data
         {
             using thread_func = Miracle::thread::thread_func;
+
             pid_t*          m_tid;
             std::string     m_name;
             thread_func     m_func;
@@ -60,23 +62,23 @@ namespace Miracle
 
             void run()
             {
-                *m_tid = current_thread::tid();
+                *m_tid = this_thread::id();
                 m_tid = nullptr;
 
-                current_thread::t_thread_name = m_name.empty() ? "miracle_thread" : m_name.c_str();
-                ::prctl(PR_SET_NAME, current_thread::t_thread_name);
+                this_thread::t_thread_name = m_name.empty() ? "miracle_thread" : m_name.c_str();
+                ::prctl(PR_SET_NAME, this_thread::t_thread_name);
                 try {
                     m_func();
-                    current_thread::t_thread_name = "finished";
+                    this_thread::t_thread_name = "finished";
                 }
                 catch (const std::exception& ex) {
-                    current_thread::t_thread_name = "crashed";
+                    this_thread::t_thread_name = "crashed";
                     fprintf(stderr, "exception caught in thread %s\n", m_name.c_str());
                     fprintf(stderr, "reason: %s\n", ex.what());
                     abort();
                 }
                 catch (...) {
-                    current_thread::t_thread_name = "crashed";
+                    this_thread::t_thread_name = "crashed";
                     fprintf(stderr, "unknown exception caught in thread %s\n", m_name.c_str());
                     throw;
                 }
@@ -92,9 +94,9 @@ namespace Miracle
         }
     }
 
-    namespace current_thread
+    namespace this_thread
     {
-        __thread int            t_cached_tid = 0;
+        __thread int            t_tid = 0;
         __thread char           t_tidstr[32];
         __thread int            t_tidstr_len = 6;
         __thread const char*    t_thread_name = "unknown";
@@ -103,14 +105,14 @@ namespace Miracle
 
         void cache_tid()
         {
-            if (t_cached_tid == 0) {
-                t_cached_tid = detail::gettid();
+            if (t_tid == 0) {
+                t_tid = detail::gettid();
             }
         }
 
         bool is_main_thread()
         {
-            return tid() == ::getpid();
+            return id() == ::getpid();
         }
 
         void sleep_usec(int64_t usec)

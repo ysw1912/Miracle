@@ -3,7 +3,6 @@
 
 #include "atomic.h"
 
-#include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <memory>
 
@@ -11,22 +10,22 @@
 
 namespace Miracle 
 {
-    namespace current_thread
+    namespace this_thread
     {
-        extern __thread int         t_cached_tid;
+        extern __thread int         t_tid;
         extern __thread char        t_tidstr[32];
-        extern __thread int         t_tidstri_len;
+        extern __thread int         t_tidstr_len;
         extern __thread const char* t_thread_name;
 
         void cache_tid();
 
-        inline int tid()
+        inline int id()
         {
             // t_cachedtid == 0的可能性很小
-            if (__builtin_expect(t_cached_tid == 0, 0)) {
+            if (__builtin_expect(t_tid == 0, 0)) {
                 cache_tid();
             }
-            return t_cached_tid;
+            return t_tid;
         }
 
         inline const char* name()
@@ -42,7 +41,7 @@ namespace Miracle
     class thread : boost::noncopyable 
     {
     public:
-        using thread_func = boost::function<void()>;
+        using thread_func = std::function<void()>;
 
         explicit thread(const thread_func&, const std::string& name = std::string());
 
@@ -51,15 +50,20 @@ namespace Miracle
         void start();
         int join();
 
-        pid_t pid() const 
-        { return m_tid; }
+        pid_t id() const 
+        {
+            return m_tid;
+        }
 
         const std::string& name() const 
-        { return m_name; }
+        {
+            return m_name;
+        }
 
         bool started() const 
-        { return m_start; }
-
+        {
+            return m_start;
+        }
 
     private:
         void set_default_name();

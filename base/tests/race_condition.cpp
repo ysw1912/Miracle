@@ -27,12 +27,12 @@ class Stock : boost::noncopyable
 public:
     Stock(const string& name) : m_name(name)
     {
-        printf("%s:\tStock()[%p] %s\n", Miracle::current_thread::name(), this, m_name.c_str());
+        printf("%s:\tStock()[%p] %s\n", Miracle::this_thread::name(), this, m_name.c_str());
     }
 
     ~Stock()
     {
-        printf("%s:\t~Stock()[%p] %s\n", Miracle::current_thread::name(), this, m_name.c_str());
+        printf("%s:\t~Stock()[%p] %s\n", Miracle::this_thread::name(), this, m_name.c_str());
     }
 
     const string& key() const 
@@ -63,7 +63,7 @@ public:
 private:
     void delete_stock(Stock* stock)
     {
-        printf("%s:\tdelete_stock[%p]\n", Miracle::current_thread::name(), stock);
+        printf("%s:\tdelete_stock[%p]\n", Miracle::this_thread::name(), stock);
         if (stock) {
             sleep_ms(500);
             lock_guard lg(m_lock);
@@ -85,11 +85,11 @@ void threadB(StockFactory* factory)
 {
     sleep_ms(250);
     auto stock1 = factory->get("MS");
-    printf("%s:\tget stock1 %p\n", Miracle::current_thread::name(), stock1.get());
+    printf("%s:\tget stock1 %p\n", Miracle::this_thread::name(), stock1.get());
 
     sleep_ms(500);
     auto stock2 = factory->get("MS");
-    printf("%s:\tget stock2 %p\n", Miracle::current_thread::name(), stock2.get());
+    printf("%s:\tget stock2 %p\n", Miracle::this_thread::name(), stock2.get());
     
     if (stock1 != stock2) {
         printf("FBI WARNING: stock1 != stock2\n");
@@ -104,7 +104,7 @@ int main()
 
     {
         auto stock = factory.get("MS");
-        printf("%s:\tget stock %p\n", Miracle::current_thread::name(), stock.get());
+        printf("%s:\tget stock %p\n", Miracle::this_thread::name(), stock.get());
     }
 
     thr.join();

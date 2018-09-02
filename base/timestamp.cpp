@@ -21,13 +21,17 @@ namespace Miracle
     BOOST_STATIC_ASSERT(sizeof(timestamp) == sizeof(int64_t));
 
     timestamp::timestamp()
-        : m_usec_since_epoch(0) { }
+        : m_usec_since_epoch(0)
+    { }
 
     timestamp::timestamp(int64_t usec_since_epoch)
-        : m_usec_since_epoch(usec_since_epoch) { }
+        : m_usec_since_epoch(usec_since_epoch)
+    { }
 
     void timestamp::swap(timestamp& rhs)
-    { std::swap(m_usec_since_epoch, rhs.m_usec_since_epoch); }
+    {
+        std::swap(m_usec_since_epoch, rhs.m_usec_since_epoch);
+    }
 
     std::string timestamp::to_string() const 
     {
@@ -46,7 +50,7 @@ namespace Miracle
         struct tm tm_time;
         // gmtime_r(&sec, &tm_time);    // UTC时间
         localtime_r(&sec, &tm_time);    // 本时区时间
-        snprintf(buf, sizeof(buf), "%4d%02d%02d %02d:%02d:%02d.%06d",
+        snprintf(buf, sizeof(buf), "%4d-%02d-%02d %02d:%02d:%02d.%06d",
                  tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
                  tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec,
                  usec);

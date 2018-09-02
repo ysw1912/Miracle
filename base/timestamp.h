@@ -19,10 +19,14 @@ namespace Miracle
         std::string to_string_format() const;
 
         int64_t usec_since_epoch() const 
-        { return m_usec_since_epoch; }
+        {
+            return m_usec_since_epoch;
+        }
 
-        bool valid() const 
-        { return m_usec_since_epoch > 0; }
+        bool is_valid() const 
+        {
+            return m_usec_since_epoch > 0;
+        }
 
         static timestamp now();
 
@@ -33,10 +37,14 @@ namespace Miracle
     };
 
     inline bool operator<(timestamp lhs, timestamp rhs)
-    { return lhs.usec_since_epoch() < rhs.usec_since_epoch(); }
+    {
+        return lhs.usec_since_epoch() < rhs.usec_since_epoch();
+    }
 
     inline bool operator==(timestamp lhs, timestamp rhs)
-    { return lhs.usec_since_epoch() == rhs.usec_since_epoch(); }
+    {
+        return lhs.usec_since_epoch() == rhs.usec_since_epoch();
+    }
 
     // 时间差, 单位: s
     inline double sec_diff(timestamp start, timestamp end)
