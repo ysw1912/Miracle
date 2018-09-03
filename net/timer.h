@@ -40,7 +40,7 @@ namespace Miracle
         void restart(timestamp now)
         {
             if (m_repeat) {
-                m_expire = add_sec(now, m_interval);
+                m_expire = now.add(m_interval);
             }
             else {
                 m_expire = timestamp();

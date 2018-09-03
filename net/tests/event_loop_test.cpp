@@ -13,36 +13,38 @@
 #include <sys/timerfd.h>
 #include <string.h>
 
-int count = 0;
 Miracle::event_loop* g_loop;
 
-void print_tid()
+void print()
 {
-    printf("pid = %d, tid = %d\n", getpid(), Miracle::this_thread::id());
-    printf("now %s\n", Miracle::timestamp::now().to_string_format().c_str());
+    printf("call print()\n");
+    sleep(20);
+    g_loop->quit();
 }
 
-void print(const char* msg)
+void fun()
 {
-    printf("msg (%s): %s\n", Miracle::timestamp::now().to_string_format().c_str(), msg);
-    if (++count == 20) {
-        g_loop->quit();
-    }
+    printf("hello\n");
+}
+
+void thr_fun()
+{
+    Miracle::event_loop loop;
+    g_loop = &loop;
+    printf("thr_fun() at %s\n", Miracle::timestamp::now().to_string().c_str());
+    g_loop->run_after(3, print);
+    usleep(300);
+    g_loop->loop();
 }
 
 int main()
 {
-    print_tid();
-    Miracle::event_loop loop;
-    g_loop = &loop;
+    Miracle::thread thr(thr_fun);
+    thr.start();
 
-    print("main");
-    loop.run_after(5, std::bind(print, "after 5, once"));
-    loop.run_after(2, std::bind(print, "after 2, once"));
-    loop.run_every(2, std::bind(print, "every 2"));
-    
-    loop.loop();
-    print("main loop exits");
-    sleep(1);
+    usleep(100);
+    g_loop->run_every(1, fun);
+
+    thr.join();
 }
 

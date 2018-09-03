@@ -85,12 +85,17 @@ namespace Miracle
                                   double interval)
     {
         timer* t = new timer(cb, when, interval);
+        m_loop->run_in_loop(std::bind(&timer_queue::add_timer_in_loop, this, t));
+        return t;
+    }
+
+    void timer_queue::add_timer_in_loop(timer* t)
+    {
         m_loop->assert_in_loop_thread();
-        bool earliest_changed = insert(t); 
-        if (earliest_changed) {
+        bool is_earliest = insert(t); 
+        if (is_earliest) {
             detail::reset_timerfd(m_timerfd, t->expire());
         }
-        return t;
     }
 
     void timer_queue::handle_read()
@@ -144,14 +149,14 @@ namespace Miracle
 
     bool timer_queue::insert(timer* t)
     {
-        bool earliest_changed = false;
+        bool is_earliest = false;
         timestamp when = t->expire();
         timer_list::iterator it = m_timers.begin();
         if (it == m_timers.end() || when < it->first) {
-            earliest_changed = true;
+            is_earliest = true;
         }
         assert(m_timers.insert(std::make_pair(when, t)).second);
-        return earliest_changed;
+        return is_earliest;
     }
 }
 

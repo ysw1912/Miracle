@@ -32,32 +32,32 @@ namespace Miracle
 
         static const int USEC_PER_SEC = 1000000;
 
+        bool operator<(timestamp rhs) const 
+        {
+            return m_usec_since_epoch < rhs.m_usec_since_epoch;
+        }
+
+        bool operator==(timestamp rhs) const 
+        {
+            return m_usec_since_epoch == rhs.m_usec_since_epoch;
+        }
+
+        timestamp add(double sec) const 
+        {
+            int64_t delta = static_cast<int64_t>(sec * timestamp::USEC_PER_SEC);
+            return timestamp(m_usec_since_epoch + delta);
+        }
+
+        double operator-(timestamp rhs) const 
+        {
+            int64_t diff = m_usec_since_epoch - rhs.m_usec_since_epoch;
+            return static_cast<double>(diff) / timestamp::USEC_PER_SEC;
+        }
+
     private:
         int64_t m_usec_since_epoch;
     };
 
-    inline bool operator<(timestamp lhs, timestamp rhs)
-    {
-        return lhs.usec_since_epoch() < rhs.usec_since_epoch();
-    }
-
-    inline bool operator==(timestamp lhs, timestamp rhs)
-    {
-        return lhs.usec_since_epoch() == rhs.usec_since_epoch();
-    }
-
-    // 时间差, 单位: s
-    inline double sec_diff(timestamp start, timestamp end)
-    {
-        int64_t diff = end.usec_since_epoch() - start.usec_since_epoch();
-        return static_cast<double>(diff) / timestamp::USEC_PER_SEC;
-    }
-
-    inline timestamp add_sec(timestamp ts, double sec)
-    {
-        int64_t delta = static_cast<int64_t>(sec * timestamp::USEC_PER_SEC);
-        return timestamp(ts.usec_since_epoch() + delta);
-    }
 }
 
 #endif

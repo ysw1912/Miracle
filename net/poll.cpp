@@ -25,7 +25,7 @@ namespace Miracle
         int num_events = ::poll(m_pollfds.data(), m_pollfds.size(), timeout_ms);
         timestamp now(timestamp::now());
         if (num_events > 0) {
-            // printf("trace: %d events happened\n", num_events);
+            printf("trace: %d events happened\n", num_events);
             fill_active_channels(num_events, active_channels);
         }
         else if (num_events == 0) {
@@ -40,7 +40,7 @@ namespace Miracle
     void poller::update_channel(channel* ch)
     {
         assert_in_loop_thread();
-        printf("trace: fd = %d, events = %d\n", ch->fd(), ch->events());
+        printf("trace: update fd = %d, events = %d\n", ch->fd(), ch->events());
         if (ch->index() < 0) {
             assert(m_channels.find(ch->fd()) == m_channels.end());
             struct pollfd pfd;
