@@ -42,7 +42,7 @@ int main()
     Miracle::thread thr(thr_fun);
     thr.start();
 
-    usleep(100);
+    usleep(300);
     g_loop->run_every(1, fun);
 
     thr.join();

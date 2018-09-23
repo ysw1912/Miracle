@@ -20,6 +20,8 @@
 
 Reactor模式的事件循环封装为`event_loop.{h,cpp}`
 
+基于one loop per thread，一个带有事件循环的线程封装为`event_loop_thread.{h, cpp}`
+
 IO复用封装`poll.{h,cpp}`
 
 tcp连接的socket API封装`socket.{h,cpp}`等
