@@ -12,18 +12,24 @@ namespace Miracle
     {
     public:
         explicit socket(int sockfd);
-        socket(socket&& rhs);
-
         ~socket();
 
-        // factory methods
-        static socket create_tcp();
-        static socket create_udp();
+    public:
+        static void close(int sockfd);
 
-        int fd() { return m_sockfd; }
+        static int create_tcp(bool nonblock = true, bool cloexec = true);
+        static int set_nonblock(int sockfd);
+        static int set_cloexec(int sockfd);
+
+    public:
+        int fd() const
+        {
+            return m_sockfd;
+        }
 
         void bind(const inet_address& addr);
         void listen();
+        int accept(inet_address* addr, bool nonblock = true, bool cloexec = true);
 
         // return 0 on success
         int connect(const inet_address& addr);
@@ -40,7 +46,7 @@ namespace Miracle
         inet_address get_peer_addr() const;
 
     private:
-        int m_sockfd;
+        const int m_sockfd;
     };
 }
 

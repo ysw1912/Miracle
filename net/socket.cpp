@@ -9,6 +9,7 @@
 #include "socket.h"
 
 #include <assert.h>
+#include <fcntl.h>  // fcntl
 #include <stdio.h>  // perror
 #include <stdlib.h> // abort
 #include <unistd.h> // close
@@ -30,30 +31,46 @@ namespace Miracle {
     }
 
     socket::socket(int sockfd) : m_sockfd(sockfd)
-    { assert(m_sockfd >= 0); }
-
-    socket::socket(socket&& rhs) : socket(rhs.m_sockfd)
-    { rhs.m_sockfd = -1; }
+    {
+        assert(m_sockfd >= 0);
+    }
 
     socket::~socket()
     {
-        if (m_sockfd >= 0) {
-            assert(::close(m_sockfd) == 0);
-        }
+        close(m_sockfd);
     }
 
-    socket socket::create_tcp()
+    void socket::close(int sockfd)
+    {
+        if (::close(sockfd) < 0)
+            printf("error: socket::close");
+    }
+
+    int socket::create_tcp(bool nonblock, bool cloexec)
     {
         int sockfd = ::socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
         assert(sockfd >= 0);
-        return socket(sockfd);
+        if (nonblock)
+            set_nonblock(sockfd);
+        if (cloexec)
+            set_cloexec(sockfd);
+        return sockfd;
     }
 
-    socket socket::create_udp()
+    int socket::set_nonblock(int sockfd)
     {
-        int sockfd = ::socket(AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP);
-        assert(sockfd >= 0);
-        return socket(sockfd);
+        int flags = ::fcntl(sockfd, F_GETFL, 0);
+        flags |= O_NONBLOCK;
+        int ret = ::fcntl(sockfd, F_SETFL, flags);
+        return ret;
+    }
+
+    int socket::set_cloexec(int sockfd)
+    {
+        int flags = ::fcntl(sockfd, F_GETFD, 0);
+        flags |= FD_CLOEXEC;
+        int ret = ::fcntl(sockfd, F_SETFD, flags);
+        return ret;
     }
 
     void socket::bind(const inet_address& addr)
@@ -73,6 +90,35 @@ namespace Miracle {
             perror("socket::listen");
             abort();
         }
+    }
+
+    int socket::accept(inet_address* addr, bool nonblock, bool cloexec)
+    {
+        struct sockaddr_in saddr;
+        socklen_t addrlen = sizeof(saddr);
+        bzero(&saddr, addrlen);
+        int connfd = ::accept(m_sockfd, sockaddr_cast(&saddr), &addrlen);
+        if (connfd >= 0) {
+            if (nonblock)
+                set_nonblock(connfd);
+            if (cloexec)
+                set_cloexec(connfd);
+            addr->set_sockaddr_in(saddr);
+        }
+        else {
+            int save_errno = errno;
+            switch (save_errno)
+            {
+                case EAGAIN:
+                case EINTR:
+                    errno = save_errno;
+                    break;
+                default:
+                    printf("unknown error of ::accept %d\n", save_errno);
+                    break;
+            }
+        }
+        return connfd;
     }
 
     int socket::connect(const inet_address& addr)
