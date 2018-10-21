@@ -72,11 +72,11 @@ namespace Miracle
             m_events |= READ_EVENT;
             update();
         }
+
     private:
        void update();
 
     private:
-    
         static const int    READ_EVENT;
         static const int    WRITE_EVENT;
         static const int    NONE_EVENT;

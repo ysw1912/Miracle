@@ -15,7 +15,7 @@ using namespace std;
 
 void new_connection(int sockfd, const Miracle::inet_address& peer_addr)
 {
-    printf("new_connection(): accept a new connection from %s\n", "11");
+    printf("new_connection(): accept a new connection from %s\n", peer_addr.to_string().c_str());
     ::write(sockfd, "Hello World\n", 12);
     Miracle::socket::close(sockfd);
 }

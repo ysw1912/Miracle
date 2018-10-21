@@ -20,21 +20,29 @@ namespace Miracle
        
         const struct sockaddr_in&
         get_sockaddr_in() const 
-        { return m_addr; } 
+        {
+            return m_addr;
+        } 
 
         void 
         set_sockaddr_in(const struct sockaddr_in& addr)
-        { m_addr = addr; }
+        {
+            m_addr = addr;
+        }
 
-        // resolve hostname to IP address 
-        static bool resolve(String hostname, inet_address* out);
-        
         bool operator==(const inet_address& rhs) const 
         {
             return m_addr.sin_family == rhs.m_addr.sin_family 
                 && m_addr.sin_addr.s_addr == rhs.m_addr.sin_addr.s_addr 
                 && m_addr.sin_port == rhs.m_addr.sin_port;
         }
+
+        // "ip:port"的string
+        std::string to_string() const;
+
+    public:
+        // 主机名解析为ip地址
+        static bool resolve(String hostname, inet_address* out);
 
     private:
         static bool resolve_slow(const char* hostname, inet_address* out);

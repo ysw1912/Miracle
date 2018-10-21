@@ -29,6 +29,16 @@ inet_address::inet_address(uint16_t port, bool loopback)
     m_addr.sin_port = htons(port);
 }
 
+std::string inet_address::to_string() const 
+{
+    char buf[32];
+    char ipv4_str_buf[INET_ADDRSTRLEN] = "Invalid";
+    ::inet_ntop(AF_INET, &m_addr.sin_addr, ipv4_str_buf, INET_ADDRSTRLEN);
+    uint16_t port = ::ntohs(m_addr.sin_port);
+    snprintf(buf, 32, "%s:%u", ipv4_str_buf, port);
+    return std::string(buf);
+}
+
 static const int BUFSIZE = 4096;
 
 bool inet_address::resolve_slow(const char* hostname, inet_address* out)
