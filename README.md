@@ -24,4 +24,8 @@ Reactor模式的事件循环封装为`event_loop.{h,cpp}`
 
 IO复用封装`poll.{h,cpp}`
 
-tcp连接的socket API封装`socket.{h,cpp}`等
+事件管理封装`channel.{h,cpp}`
+
+时间列表封装`timer_queue.{h,cpp}`，使用了时间戳
+
+tcp连接的socket API封装`socket.{h,cpp}`、`acceptor.{h,cpp}`等
